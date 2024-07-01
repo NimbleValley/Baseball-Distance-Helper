@@ -24,6 +24,8 @@ function handleImageError(error) {
 }
 
 async function handleValues(data) {
+    // Dev version
+
     console.log(data);
     imageUploadContainer.style.borderColor = 'rgb(109, 221, 44)';
 
