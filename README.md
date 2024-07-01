@@ -1,4 +1,4 @@
-In progress, ultimately designed to aid in dimensioning of baseball fields to aid in modeling as well as real life distances. 
+In progress, ultimately designed to aid in dimensioning of baseball fields for use in modeling as well as determining real life distances. 
 
 Screenshots:
 ![image](https://github.com/NimbleValley/Baseball-Camera-Solver/assets/97319135/4c29a44d-fe7f-467b-9473-28ecb8b8a316)
