@@ -37,10 +37,11 @@ async function handleValues(data) {
     );
 
     const points = data.predictions[0].points;
-    let hull = convexhull.makeHull(points);
+    //let hull = convexhull.makeHull(points);
+    let hull = points;
 
     // Merge by distance
-    let mergeDistance = validateCanvas.width / 65;
+    let mergeDistance = validateCanvas.width / 85;
     for (let i = 0; i < hull.length; i++) {
         for (let p = i+1; p < hull.length; p++) {
             if (getDistance(hull[i], hull[p]) < mergeDistance) {
