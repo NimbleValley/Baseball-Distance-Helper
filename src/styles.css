@@ -1,0 +1,50 @@
+label {
+    font-size: 5vh;
+}
+
+input {
+    background-color: transparent;
+    font-size: 3vh;
+    margin-top: 1vh;
+}
+
+input:hover {
+    cursor: pointer;
+}
+
+input[type=file]::file-selector-button {
+    color: black;
+    border-color: #454622;
+    transition: color 0.15s, background-color 0.3s;
+    cursor: pointer;
+}
+
+
+
+
+#image-upload-container {
+    margin: 5vh;
+    border: solid 0.5vh rgb(221, 44, 44);
+    padding: 2.5vh;
+    border-radius: 0.75vh;
+}
+
+#image-upload-container:hover {
+    cursor: pointer;
+    background-color: #00000023;
+}
+
+#image-upload-container:hover>input[type=file]::file-selector-button {
+    color: white;
+    border-radius: .2em;
+    background-color: #454622;
+}
+
+
+
+
+.vertical-container {
+    display: flex;
+    flex-direction: column;
+    width: fit-content;
+}
