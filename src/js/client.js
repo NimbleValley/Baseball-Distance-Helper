@@ -11,15 +11,14 @@ validateCanvas.addEventListener('mousemove', handleCanvasMouse);
 validateCanvas.addEventListener('click', handleCanvasClick);
 
 var uploadedImage;
-var isFovCalculated = false;
+var isCalculated = false;
 var hull;
 var closestPointToClick;
-var fovLines = [new FOVLine(0, 0, true)];
+var infieldLines = [new InfieldLine(0, 0, true)];
+var grid = [];
+var squareLength;
 
-var mousePos = {
-    x: 0,
-    y: 0
-}
+var mousePos = new Point(0, 0);
 
 imageUpload.addEventListener('change', function () {
     const reader = new FileReader();
@@ -70,7 +69,7 @@ async function handleValues(data) {
     });
 
     console.log(hull);
-    console.log(fovLines);
+    console.log(infieldLines);
 
     animateSelectPoints();
 }
@@ -117,14 +116,14 @@ function animateSelectPoints() {
     ctx.strokeStyle = 'gold';
     ctx.lineWidth = 5;
 
-    for (let i = 0; i < fovLines.length; i++) {
-        if (!fovLines[i].isFull) {
+    for (let i = 0; i < infieldLines.length; i++) {
+        if (!infieldLines[i].isFull) {
             break;
         }
 
         ctx.beginPath();
-        ctx.moveTo(fovLines[i].p1.x, fovLines[i].p1.y);
-        ctx.lineTo(fovLines[i].p2.x, fovLines[i].p2.y);
+        ctx.moveTo(infieldLines[i].p1.x, infieldLines[i].p1.y);
+        ctx.lineTo(infieldLines[i].p2.x, infieldLines[i].p2.y);
         ctx.stroke();
     }
 
@@ -134,60 +133,109 @@ function animateSelectPoints() {
 function handleCanvasMouse(e) {
     let rect = e.target.getBoundingClientRect();
 
-    mousePos = {
-        x: e.clientX - rect.left,
-        y: e.clientY - rect.top
-    }
+    mousePos.x = e.clientX - rect.left;
+    mousePos.y = e.clientY - rect.top;
 }
 
 function handleCanvasClick() {
-    if (!isFovCalculated) {
-        if (fovLines[fovLines.length - 1].isFull) {
-            fovLines.push(new FOVLine(hull[closestPointToClick].x, hull[closestPointToClick].y, false));
+    if (!isCalculated) {
+        if (infieldLines[infieldLines.length - 1].isFull) {
+            infieldLines.push(new InfieldLine(hull[closestPointToClick].x, hull[closestPointToClick].y, false));
         } else {
-            fovLines[fovLines.length - 1].addPoint(hull[closestPointToClick].x, hull[closestPointToClick].y);
+            infieldLines[infieldLines.length - 1].addPoint(hull[closestPointToClick].x, hull[closestPointToClick].y);
         }
-        if (fovLines.length >= 4 && fovLines[3].isFull) {
+        if (infieldLines.length >= 4 && infieldLines[3].isFull) {
             runCalculations();
         }
     }
 }
 
 function runCalculations() {
-    isFovCalculated = true;
+    isCalculated = true;
 
     let slopes = [];
 
-    for (let i = 0; i < fovLines.length; i++) {
-        slopes.push((fovLines[i].p1.y - fovLines[i].p2.y) / (fovLines[i].p1.x - fovLines[i].p2.x));
+    for (let i = 0; i < infieldLines.length; i++) {
+        slopes.push((infieldLines[i].p1.y - infieldLines[i].p2.y) / (infieldLines[i].p1.x - infieldLines[i].p2.x));
     }
 
     let sortedSlopes = slopes.toSorted();
     let slopeIndicies = [];
 
-    for(let i = 0; i < slopes.length; i ++) {
-        for(let s = 0; s < slopes.length; s ++) {
-            if(Math.round(sortedSlopes[i]*1000) == Math.round(slopes[s]*1000)) {
+    // Sort slopes and find their set of points. User could select lines in different orders, this ensures calculations always work
+    for (let i = 0; i < slopes.length; i++) {
+        for (let s = 0; s < slopes.length; s++) {
+            if (Math.round(sortedSlopes[i] * 1000) == Math.round(slopes[s] * 1000)) {
                 slopeIndicies.push(s);
                 continue;
             }
         }
     }
 
-    let vanishingPoint1 = getIntersectionPoint(fovLines[slopeIndicies[0]].p1.x, fovLines[slopeIndicies[0]].p1.y, fovLines[slopeIndicies[0]].p2.x, fovLines[slopeIndicies[0]].p2.y, fovLines[slopeIndicies[1]].p1.x, fovLines[slopeIndicies[1]].p1.y, fovLines[slopeIndicies[1]].p2.x, fovLines[slopeIndicies[1]].p2.y);
-    let vanishingPoint2 = getIntersectionPoint(fovLines[slopeIndicies[2]].p1.x, fovLines[slopeIndicies[2]].p1.y, fovLines[slopeIndicies[2]].p2.x, fovLines[slopeIndicies[2]].p2.y, fovLines[slopeIndicies[3]].p1.x, fovLines[slopeIndicies[3]].p1.y, fovLines[slopeIndicies[3]].p2.x, fovLines[slopeIndicies[3]].p2.y);
+    // Now find vanishing points, intersection of each set of 'parallel' lines
+    let vanishingPoint1 = getIntersectionPoint(infieldLines[slopeIndicies[0]].p1, infieldLines[slopeIndicies[0]].p2, infieldLines[slopeIndicies[1]].p1, infieldLines[slopeIndicies[1]].p2);
+    let vanishingPoint2 = getIntersectionPoint(infieldLines[slopeIndicies[2]].p1, infieldLines[slopeIndicies[2]].p2, infieldLines[slopeIndicies[3]].p1, infieldLines[slopeIndicies[3]].p2);
+    
+    // Find the corner of the first quadrilateral, we'll assume it is a perfect square as most infields are
+    grid.push(
+        new GridSquare(
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[0]].p1, infieldLines[slopeIndicies[0]].p2, infieldLines[slopeIndicies[2]].p1, infieldLines[slopeIndicies[2]].p2), new Point(0, 0)),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[2]].p1, infieldLines[slopeIndicies[2]].p2, infieldLines[slopeIndicies[1]].p1, infieldLines[slopeIndicies[1]].p2), new Point(0, 0)),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[1]].p1, infieldLines[slopeIndicies[1]].p2, infieldLines[slopeIndicies[3]].p1, infieldLines[slopeIndicies[3]].p2), new Point(0, 0)),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[0]].p1, infieldLines[slopeIndicies[0]].p2, infieldLines[slopeIndicies[3]].p1, infieldLines[slopeIndicies[3]].p2), new Point(0, 0))
+        )
+    );
+
+    // Update initial lengths, for testing purposes we will use 90 feet
+    // Left field line will be x while right field line will be y
+    // TODO change for more accurate results
+    squareLength = 90;
+    grid[0].points[0].worldPoint = new Point(0, 0);
+    grid[0].points[1].worldPoint = new Point(squareLength, 0);
+    grid[0].points[2].worldPoint = new Point(squareLength, squareLength);
+    grid[0].points[3].worldPoint = new Point(0, squareLength);
+
+    let middleVanishingPoint = getIntersectionPoint(vanishingPoint1, vanishingPoint2, grid[0].points[0].screenPoint, grid[0].points[2].screenPoint);
     console.log(vanishingPoint1);
+    console.log(vanishingPoint2);
+    console.log(middleVanishingPoint);
+
+    ctx.fillRect(middleVanishingPoint.x, middleVanishingPoint.y, 20, 20);
+
+    branchFromSquare(grid[0], vanishingPoint1, vanishingPoint2, middleVanishingPoint);
+
+    showGrid();
 }
 
-function getIntersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4) {
-    var ua, ub, denom = (y4 - y3) * (x2 - x1) - (x4 - x3) * (y2 - y1);
+function branchFromSquare(square, vp1, vp2, vpMid) {
+    grid.push(
+        new GridSquare(
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[0]].p1, infieldLines[slopeIndicies[0]].p2, infieldLines[slopeIndicies[2]].p1, infieldLines[slopeIndicies[2]].p2), square.points[2].worldPoint),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[2]].p1, infieldLines[slopeIndicies[2]].p2, infieldLines[slopeIndicies[1]].p1, infieldLines[slopeIndicies[1]].p2), new Point(0, 0)),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[1]].p1, infieldLines[slopeIndicies[1]].p2, infieldLines[slopeIndicies[3]].p1, infieldLines[slopeIndicies[3]].p2), new Point(0, 0)),
+            new GridPoint(getIntersectionPoint(infieldLines[slopeIndicies[0]].p1, infieldLines[slopeIndicies[0]].p2, infieldLines[slopeIndicies[3]].p1, infieldLines[slopeIndicies[3]].p2), new Point(0, 0))
+        )
+    );
+}
+
+function showGrid() {
+    ctx.fillStyle = 'cyan';
+    ctx.font = '12px serif';
+    for(let i = 0; i < grid.length; i ++) {
+        for(let p = 0; p < 4; p ++) {
+            let tempSquare = grid[i];
+            ctx.fillRect(tempSquare.points[p].screenPoint.x, tempSquare.points[p].screenPoint.y, 5, 5);
+            ctx.fillText(`(${tempSquare.points[p].worldPoint.x}, ${tempSquare.points[p].worldPoint.y})`, tempSquare.points[p].screenPoint.x, tempSquare.points[p].screenPoint.y+10);
+        }
+    }
+}
+
+function getIntersectionPoint(p1, p2, p3, p4) {
+    var ua, ub, denom = (p4.y - p3.y) * (p2.x - p1.x) - (p4.x - p3.x) * (p2.y - p1.y);
     if (denom == 0) {
         return null;
     }
-    ua = ((x4 - x3) * (y1 - y3) - (y4 - y3) * (x1 - x3)) / denom;
-    ub = ((x2 - x1) * (y1 - y3) - (y2 - y1) * (x1 - x3)) / denom;
-    return {
-        x: x1 + ua * (x2 - x1),
-        y: y1 + ua * (y2 - y1),
-    };
+    ua = ((p4.x - p3.x) * (p1.y - p3.y) - (p4.y - p3.y) * (p1.x - p3.x)) / denom;
+    ub = ((p2.x - p1.x) * (p1.y - p3.y) - (p2.y - p1.y) * (p1.x - p3.x)) / denom;
+    return new Point( p1.x + ua * (p2.x - p1.x), p1.y + ua * (p2.y - p1.y));
 }
