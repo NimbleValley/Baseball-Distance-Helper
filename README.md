@@ -1,4 +1,4 @@
-**Designed to aid in dimensioning of baseball fields for use in modeling as well as determining real life distances. **
+**Designed to aid in dimensioning of baseball fields for use in modeling as well as determining real life distances.**
 
 **How to use:** 
 
