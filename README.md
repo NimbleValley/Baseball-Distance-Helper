@@ -1,16 +1,20 @@
 **Designed to aid in dimensioning of baseball fields for use in modeling as well as determining real life distances. **
 
 **How to use:** 
+
 Upload a baseball diamond. Note that it must have grass inside the infield. Additionally, the diamond must be oriented so that home plate is at the bottom and second base is at the top of the diamond, so any photo from behind the field should work. After uploading, click on a vertex and then one that is parallel. After clicking, it will show a line which should roughly match up with the edge of the infield. Repeat until all four sides have been identified. After the calculations have occurred you can freely click or drag anywhere within the field of play to get the approximate distance from home plate.
 
 **Preview:**
-![Baseball Dimension Analyzer  - Google Chrome 2024-07-04 20-12-11](https://github.com/NimbleValley/Baseball-Distance-Helper/assets/97319135/57ecb918-4396-4767-a46f-e1422f856143)
+
+![Baseball Dimension Analyzer  - Google Chrome 2024-07-04 20-12-11 (1)](https://github.com/NimbleValley/Baseball-Distance-Helper/assets/97319135/d44dca74-fd65-4524-b285-b651ca47cd55)
 
 **Screenshots:**
+
 ![image](https://github.com/NimbleValley/Baseball-Camera-Solver/assets/97319135/cd0b2122-9d04-4aac-a0d1-e5d60fd0d534)
 ![image](https://github.com/NimbleValley/Baseball-Camera-Solver/assets/97319135/8e0fd3ca-2852-49e4-b994-199b1adf8308)
 
 **How it works:**
+
 When all four sides have been selected, the points where the lines meet are found which theoretically form a square on a regular field. Additionally, the sides of the first square are estimated at 86 feet as they are just short of the 90 foot bases. Although not perfectly accurate, this constant will be used for now until an updated version.
 
 After this, the two vanishing points are found as well as the "middle" vanishing point which intersects the lines formed by the two vanishing points and second base/home plate. After these have been found, it finds 4 more squares up the third base line. First it finds the top point of the new square which is the intersection of the lines formed by the middle vanishing point + the bottom of the new square and the top + right vertices of the square below. The left point can then be found as the intersection between lines formed by the right vanishing point + the top point just found and the bottom + left vertices of the square below. The right point would then simply be the top vertex of the square below. 
