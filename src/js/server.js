@@ -28,7 +28,7 @@ function analyzeImage(image) {
         method: "POST",
         url: "https://detect.roboflow.com/baseballcamerafov/2",
         params: {
-            api_key: "gXxM60H8xvNN1ODca1US"
+            api_key: KEY
         },
         data: image,
         headers: {
