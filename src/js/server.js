@@ -3,6 +3,8 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import axios from 'axios';
 
+const KEY = "ABCD";
+
 const app = express();
 app.use(express.static('./src'));
 app.use(express.json());
@@ -18,17 +20,18 @@ server.listen(PORT, function () {
 const socketio = new Server(server);
 
 socketio.on('connection', (socket) => {
-    socket.on('analyze_image', analyzeImage);
+    socket.on('analyze_infield', analyzeInfield);
+    socket.on('analyze_wall', analyzeWall);
 });
 
-function analyzeImage(image) {
+function analyzeInfield(image) {
     console.log('Imaged recieved by local server.');
 
     axios({
         method: "POST",
         url: "https://detect.roboflow.com/baseballcamerafov/2",
         params: {
-            api_key: "gXxM60H8xvNN1ODca1US"
+            api_key: KEY
         },
         data: image,
         headers: {
@@ -37,10 +40,35 @@ function analyzeImage(image) {
     })
     .then(function(response) {
         console.log(response.data);
-        socketio.emit('send-points', response.data);
+        socketio.emit('send-infield-points', response.data);
     })
     .catch(function(error) {
         console.log(error.message);
         socketio.emit('image-error', error.message);
     });
 }
+
+function analyzeWall(image) {
+    console.log('Imaged recieved by local server.');
+
+    axios({
+        method: "POST",
+        url: "https://detect.roboflow.com/baseballwalls/1",
+        params: {
+            api_key: KEY
+        },
+        data: image,
+        headers: {
+            "Content-Type": "application/x-www-form-urlencoded"
+        }
+    })
+    .then(function(response) {
+        console.log(response.data);
+        socketio.emit('send-wall-points', response.data);
+    })
+    .catch(function(error) {
+        console.log(error.message);
+        socketio.emit('image-error', error.message);
+    });
+}
+

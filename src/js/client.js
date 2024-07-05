@@ -1,5 +1,6 @@
 var socket = io();
-socket.on('send-points', handleValues);
+socket.on('send-infield-points', handleValues);
+socket.on('send-wall-points', handleWallPoints);
 socket.on('image-error', handleImageError);
 
 const imageUpload = document.getElementById('image-upload');
@@ -39,7 +40,7 @@ imageUpload.addEventListener('change', function () {
     reader.onload = function () {
         uploadedImage = this.result;
         const base64 = this.result.replace(/.*base64,/, '');
-        socket.emit('analyze_image', base64);
+        socket.emit('analyze_infield', base64);
     };
     reader.readAsDataURL(this.files[0]);
 }, false);
@@ -172,7 +173,6 @@ function handleCanvasMouse(e) {
     mousePos.x = e.clientX - rect.left;
     mousePos.y = e.clientY - rect.top;
 }
-
 
 // User clicks on canvas
 function handleCanvasClick() {
@@ -414,6 +414,11 @@ function subdivideSquare(square) {
     */
 
     return newSquares;
+}
+
+// Get possible wall points
+function handleWallPoints(data) {
+
 }
 
 // Debugging purposes, renders the grid points
