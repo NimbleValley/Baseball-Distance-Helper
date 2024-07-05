@@ -123,7 +123,7 @@ function animateFrame() {
         ctx.font = `${canvas.width / 75}px serif`;
         ctx.fillText('Click anywhere in field of play to see estimated distance from home plate.', 10, 25);
 
-        ctx.font = `${canvas.width / 100}px serif`;
+        ctx.font = `${canvas.width / 75}px serif`;
         ctx.fillText(`${getWorldCoordinates(markerPos)} feet`, markerPos.x + 10, markerPos.y);
 
         ctx.fillStyle = 'red';
