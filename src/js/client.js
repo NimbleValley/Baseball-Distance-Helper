@@ -74,8 +74,8 @@ async function handleValues(data) {
     for (let i = 0; i < hull.length; i++) {
         for (let p = i + 1; p < hull.length; p++) {
             if (getDistance(hull[i], hull[p]) < mergeDistance) {
-                hull[i].x = getMidpoint(hull[p].x, hull[i].x);
-                hull[i].y = getMidpoint(hull[p].y, hull[i].y);
+                hull[i].x = getMiddleValue(hull[p].x, hull[i].x);
+                hull[i].y = getMiddleValue(hull[p].y, hull[i].y);
                 hull.splice(p, 1);
                 p--;
             }
@@ -108,10 +108,6 @@ function toRad(degrees) {
 
 function getDistance(p1, p2) {
     return Math.sqrt(Math.pow(p1.x - p2.x, 2) + Math.pow(p1.y - p2.y, 2));
-}
-
-function getMidpoint(v1, v2) {
-    return (v1 + v2) / 2;
 }
 
 function animateFrame() {
@@ -356,7 +352,7 @@ function getWorldCoordinates(point) {
         }
     }
 
-    return Math.round(Math.sqrt(Math.pow(closestPoint.x, 2) + Math.pow(closestPoint.y, 2)));
+    return Math.round(getDistance(closestPoint, new Point(0, 0)));
 }
 
 // Subdivides given square
@@ -442,8 +438,8 @@ function handleWallPoints(data) {
     for (let i = 0; i < wallData.length; i++) {
         for (let p = i + 1; p < wallData.length; p++) {
             if (getDistance(wallData[i], wallData[p]) < mergeDistance) {
-                wallData[i].x = getMidpoint(wallData[p].x, wallData[i].x);
-                wallData[i].y = getMidpoint(wallData[p].y, wallData[i].y);
+                wallData[i].x = getMiddleValue(wallData[p].x, wallData[i].x);
+                wallData[i].y = getMiddleValue(wallData[p].y, wallData[i].y);
                 wallData.splice(p, 1);
                 p--;
             }
@@ -518,4 +514,9 @@ function pointInPolygon(point, polygon) {
 // Returns middle of p1 and p2
 function getMiddlePoint(p1, p2) {
     return new Point((p1.x + p2.x) / 2, (p1.y + p2.y) / 2);
+}
+
+// Returns middle of v1 and v2
+function getMiddleValue(v1, v2) {
+    return (v1 + v2) / 2;
 }
