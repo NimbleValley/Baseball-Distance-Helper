@@ -8,22 +8,25 @@ const imageUploadContainer = document.getElementById('image-upload-container');
 const canvas = document.getElementById('validate-canvas');
 var ctx = canvas.getContext('2d');
 
-var mouseDown = false;
-
 canvas.addEventListener('mousemove', handleCanvasMouse);
 canvas.addEventListener('mousedown', () => { mouseDown = true });
 canvas.addEventListener('mouseup', () => { mouseDown = false });
 canvas.addEventListener('mouseleave', () => { mouseDown = false });
 canvas.addEventListener('click', handleCanvasClick);
 
-var uploadedImage;
+var mouseDown = false;
 var isCalculated = false;
+
+var uploadedImage;
 var hull;
 var closestPointToClick;
+
 var infieldLines = [new InfieldLine(0, 0, true)];
 var grid = [];
+
 var squareLength;
 var canvasImage;
+var wallData;
 
 var utilPoints = {
     vanishingPoint1: new Point(0, 0),
@@ -41,6 +44,7 @@ imageUpload.addEventListener('change', function () {
         uploadedImage = this.result;
         const base64 = this.result.replace(/.*base64,/, '');
         socket.emit('analyze_infield', base64);
+        socket.emit('analyze_walls', base64);
     };
     reader.readAsDataURL(this.files[0]);
 }, false);
@@ -87,7 +91,7 @@ async function handleValues(data) {
     console.log(hull);
     console.log(infieldLines);
 
-    animateSelectPoints();
+    animateFrame();
 }
 
 const loadImage = src =>
@@ -110,7 +114,7 @@ function getMidpoint(v1, v2) {
     return (v1 + v2) / 2;
 }
 
-function animateSelectPoints() {
+function animateFrame() {
     ctx.clearRect(0, 0, canvas.width, canvas.height);
     ctx.drawImage(canvasImage, 0, 0);
 
@@ -129,6 +133,19 @@ function animateSelectPoints() {
             markerPos.x = mousePos.x;
             markerPos.y = mousePos.y;
         }
+
+        for (let i = 0; i < wallData.length; i++) {
+            ctx.fillStyle = 'lime';
+            if (Math.sqrt(Math.pow(mousePos.x - wallData[i].x, 2) + Math.pow(mousePos.y - wallData[i].y, 2)) <= canvas.width / 140) {
+                ctx.fillStyle = 'red';
+                if (mouseDown) {
+                    markerPos.x = wallData[i].x;
+                    markerPos.y = wallData[i].y;
+                }
+            }
+            ctx.fillRect(wallData[i].x - 2, wallData[i].y - 2, 4, 4);
+        }
+
     } else {
 
         ctx.fillStyle = 'lime';
@@ -164,7 +181,7 @@ function animateSelectPoints() {
         }
     }
 
-    window.requestAnimationFrame(animateSelectPoints);
+    window.requestAnimationFrame(animateFrame);
 }
 
 function handleCanvasMouse(e) {
@@ -418,7 +435,20 @@ function subdivideSquare(square) {
 
 // Get possible wall points
 function handleWallPoints(data) {
+    wallData = data.predictions[0].points;
+    console.log(wallData);
 
+    let mergeDistance = canvas.width / 85;
+    for (let i = 0; i < wallData.length; i++) {
+        for (let p = i + 1; p < wallData.length; p++) {
+            if (getDistance(wallData[i], wallData[p]) < mergeDistance) {
+                wallData[i].x = getMidpoint(wallData[p].x, wallData[i].x);
+                wallData[i].y = getMidpoint(wallData[p].y, wallData[i].y);
+                wallData.splice(p, 1);
+                p--;
+            }
+        }
+    }
 }
 
 // Debugging purposes, renders the grid points

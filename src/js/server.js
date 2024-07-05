@@ -3,7 +3,7 @@ import { createServer } from 'http';
 import { Server } from 'socket.io';
 import axios from 'axios';
 
-const KEY = "ABCD";
+const KEY = "1234";
 
 const app = express();
 app.use(express.static('./src'));
@@ -21,7 +21,7 @@ const socketio = new Server(server);
 
 socketio.on('connection', (socket) => {
     socket.on('analyze_infield', analyzeInfield);
-    socket.on('analyze_wall', analyzeWall);
+    socket.on('analyze_walls', analyzeWall);
 });
 
 function analyzeInfield(image) {
@@ -53,7 +53,7 @@ function analyzeWall(image) {
 
     axios({
         method: "POST",
-        url: "https://detect.roboflow.com/baseballwalls/1",
+        url: "https://detect.roboflow.com/baseballwalls/2",
         params: {
             api_key: KEY
         },
