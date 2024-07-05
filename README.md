@@ -15,6 +15,8 @@ Upload a baseball diamond. Note that it must have grass inside the infield. Addi
 
 **How it works:**
 
+After the image is uploaded, a segmentation model trained using Roboflow finds possible points along the interior of the infield. The user selects points that form lines. To ensure the user can select any sides in any order, they are sorted based off slope and coordinates.
+
 When all four sides have been selected, the points where the lines meet are found which theoretically form a square on a regular field. Additionally, the sides of the first square are estimated at 86 feet as they are just short of the 90 foot bases. Although not perfectly accurate, this constant will be used for now until an updated version.
 
 After this, the two vanishing points are found as well as the "middle" vanishing point which intersects the lines formed by the two vanishing points and second base/home plate. After these have been found, it finds 4 more squares up the third base line. First it finds the top point of the new square which is the intersection of the lines formed by the middle vanishing point + the bottom of the new square and the top + right vertices of the square below. The left point can then be found as the intersection between lines formed by the right vanishing point + the top point just found and the bottom + left vertices of the square below. The right point would then simply be the top vertex of the square below. 
