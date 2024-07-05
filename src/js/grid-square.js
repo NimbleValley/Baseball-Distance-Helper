@@ -6,7 +6,7 @@ class GridSquare {
     constructor(p1, p2, p3, p4) {
         this.points = [p1, p2 ,p3, p4];
 
-        // Assuming a view from behind home plate, the first point should be hoem plate and continue clockwise
+        // Assuming a view from behind home plate, the first point should be home plate and continue clockwise
         let tempPoints = new Array(4);
         let sortedY = [...this.points].sort(function (a, b) { return b.screenPoint.y - a.screenPoint.y });
         tempPoints[2] = sortedY[3];
