@@ -4,8 +4,9 @@
 
 Upload a baseball diamond. Note that it must have grass inside the infield. Additionally, the diamond must be oriented so that home plate is at the bottom and second base is at the top of the diamond, so any photo from behind the field should work. After uploading, click on a vertex and then one that is parallel. After clicking, it will show a line which should roughly match up with the edge of the infield. Repeat until all four sides have been identified. After the calculations have occurred you can freely click or drag anywhere within the field of play to get the approximate distance from home plate.
 
-**Preview:**
+**Previews:**
 
+![Baseball Dimension Analyzer  - Google Chrome 2024-07-05 13-12-12](https://github.com/NimbleValley/Baseball-Distance-Helper/assets/97319135/b4c87377-9ca3-4a4c-ba94-9b6023f6ce2e)
 ![Baseball Dimension Analyzer  - Google Chrome 2024-07-04 20-12-11 (1)](https://github.com/NimbleValley/Baseball-Distance-Helper/assets/97319135/d44dca74-fd65-4524-b285-b651ca47cd55)
 
 **Screenshots:**
@@ -15,7 +16,7 @@ Upload a baseball diamond. Note that it must have grass inside the infield. Addi
 
 **How it works:**
 
-After the image is uploaded, a segmentation model trained using Roboflow finds possible points along the interior of the infield. The user selects points that form lines. To ensure the user can select any sides in any order, they are sorted based off slope and coordinates.
+After the image is uploaded, a segmentation model trained using Roboflow finds possible points along the interior of the infield. Socket.io connects the client side and the server side. After the possible points have been found, the user selects points that form lines. To ensure the user can select any sides in any order, they are sorted based off slope and coordinates.
 
 When all four sides have been selected, the points where the lines meet are found which theoretically form a square on a regular field. Additionally, the sides of the first square are estimated at 86 feet as they are just short of the 90 foot bases. Although not perfectly accurate, this constant will be used for now until an updated version.
 
@@ -27,3 +28,4 @@ After all squares have been found up the third base line, 4 more sets of four sq
 
 Now it's time to find the distance from where the user clicks. When the user's mouse is down, the distance can be found simply by subdividing the squares. First it iterates through the initial 25 squares to find which one the point is in. If it is not found in any, then we cannot calculate the distance using this technique and it displays a question mark in the distance indicator. However, if it is found within a square, that square is subdivided 10 times. Each time it subdivides it creates four new squares inside the old square. These are found by making an 'x' to find the center of the original square. Then, the other vertices are found by finding the intersection points between the known vertices, vanishing points, and the center point in various orders. The world coordinates are easier to find as they are just the midpoint between the old vertices. Then, it finds which of the four subdivisions the target point is in and subdivides that square again. After 10 iterations it is very accurate but still just an estimate. The final distance is found by using the pythagorean theorem on the bottom point of the 10th subdivision.
 
+It also segments the image again to find spots along the outfield wall. This model doesn't perform perfectly but can be helpful in a well lit contrasting environment.
