@@ -19,6 +19,12 @@ input[type=file]::file-selector-button {
     cursor: pointer;
 }
 
+canvas {
+    background-size: cover;
+    background-repeat: no-repeat;
+    background-position: center center;
+}
+
 canvas:hover {
     cursor: pointer;
 }
