@@ -10,6 +10,7 @@ app.use(express.static('./src'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 
+// Run port 8080 to match other projects
 const PORT = 8080;
 
 const server = createServer(app);
